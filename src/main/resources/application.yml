@@ -2,13 +2,14 @@ spring:
   profiles:
     active: dev
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
+    url: jdbc:postgresql://localhost:5432/agilesyncdb
     username: postgres
     password: local.123
     driverClassName: org.postgresql.Driver
     maximumPoolSize: 5
   jpa:
     show-sql: true
-    hibernate:
-      ddl:
-        auto: update
+api:
+  security:
+    token:
+      secret: ${JWT_SECRET:ezxi3zqSe5}
