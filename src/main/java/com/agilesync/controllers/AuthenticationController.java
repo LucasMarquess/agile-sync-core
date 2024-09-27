@@ -4,17 +4,16 @@ import com.agilesync.domain.dto.AuthenticationDTO;
 import com.agilesync.domain.dto.LoginResponseDTO;
 import com.agilesync.domain.dto.ResponseDTO;
 import com.agilesync.domain.dto.UserDTO;
-import com.agilesync.domain.model.User;
+import com.agilesync.domain.entity.User;
 import com.agilesync.service.AuthorizationService;
 import com.agilesync.service.TokenService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
@@ -22,14 +21,12 @@ import java.util.Objects;
 @RestController
 @RequestMapping("auth")
 @CrossOrigin("*")
+@RequiredArgsConstructor
 public class AuthenticationController {
 
-	@Autowired
-	private TokenService tokenService;
-	@Autowired
-	private AuthenticationManager authenticationManager;
-	@Autowired
-	private AuthorizationService authorizationService;
+	private final TokenService tokenService;
+	private final AuthenticationManager authenticationManager;
+	private final AuthorizationService authorizationService;
 
 	@PostMapping("/login")
 	public ResponseEntity<?> login(@RequestBody @Valid AuthenticationDTO data) {
@@ -40,10 +37,10 @@ public class AuthenticationController {
 		}
 
 		try {
-			UsernamePasswordAuthenticationToken usernamePassword = new UsernamePasswordAuthenticationToken(data.getLogin(), data.getPassword());
-			Authentication auth = this.authenticationManager.authenticate(usernamePassword);
+			var usernamePassword = new UsernamePasswordAuthenticationToken(data.getLogin(), data.getPassword());
+			var auth = this.authenticationManager.authenticate(usernamePassword);
 
-			String token = this.tokenService.generateToken((User) auth.getPrincipal());
+			var token = this.tokenService.generateToken((User) auth.getPrincipal());
 			return ResponseEntity.ok(new LoginResponseDTO(token));
 		} catch (BadCredentialsException ex) {
 			return ResponseEntity

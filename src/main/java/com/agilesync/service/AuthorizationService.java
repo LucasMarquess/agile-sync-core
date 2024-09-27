@@ -2,7 +2,7 @@ package com.agilesync.service;
 
 import com.agilesync.domain.dto.UserDTO;
 import com.agilesync.domain.enumeration.UserRole;
-import com.agilesync.domain.model.User;
+import com.agilesync.domain.entity.User;
 import com.agilesync.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -27,8 +27,8 @@ public class AuthorizationService implements UserDetailsService {
 	}
 
 	public void registerUser(UserDTO dto){
-		String encryptedPassword = new BCryptPasswordEncoder().encode(dto.getPassword());
-		User newUser = new User(dto.getLogin(), encryptedPassword, dto.getEmail(), UserRole.USER);
+		var encryptedPassword = new BCryptPasswordEncoder().encode(dto.getPassword());
+		var newUser = new User(dto.getLogin(), encryptedPassword, dto.getEmail(), UserRole.USER);
 
 		this.userRepository.save(newUser);
 	}

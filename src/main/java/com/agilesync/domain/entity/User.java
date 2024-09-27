@@ -1,4 +1,4 @@
-package com.agilesync.domain.model;
+package com.agilesync.domain.entity;
 
 import com.agilesync.domain.enumeration.UserRole;
 import jakarta.persistence.*;

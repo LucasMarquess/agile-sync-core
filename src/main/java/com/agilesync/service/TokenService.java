@@ -1,6 +1,6 @@
 package com.agilesync.service;
 
-import com.agilesync.domain.model.User;
+import com.agilesync.domain.entity.User;
 import com.agilesync.exceptions.TokenException;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;

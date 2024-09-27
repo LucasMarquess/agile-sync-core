@@ -4,7 +4,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/agilesyncdb
     username: postgres
-    password: local.123
+    password: itix.123
     driverClassName: org.postgresql.Driver
     maximumPoolSize: 5
   jpa:
