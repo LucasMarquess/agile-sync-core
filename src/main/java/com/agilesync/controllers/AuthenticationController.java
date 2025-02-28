@@ -20,7 +20,6 @@ import java.util.Objects;
 
 @RestController
 @RequestMapping("auth")
-@CrossOrigin("*")
 @RequiredArgsConstructor
 public class AuthenticationController {
 
@@ -44,7 +43,7 @@ public class AuthenticationController {
 			return ResponseEntity.ok(new LoginResponseDTO(token));
 		} catch (BadCredentialsException ex) {
 			return ResponseEntity
-					.status(HttpStatus.UNAUTHORIZED)
+					.status(HttpStatus.FORBIDDEN)
 					.body(new ResponseDTO("Senha incorreta."));
 		}
 	}

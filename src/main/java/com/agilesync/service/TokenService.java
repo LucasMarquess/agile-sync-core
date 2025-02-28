@@ -37,7 +37,7 @@ public class TokenService {
 		try {
 			Algorithm algorithm = Algorithm.HMAC256(secret);
 			return JWT.require(algorithm)
-					.withIssuer("auth-api")
+					.withIssuer("agile-sync-core")
 					.build()
 					.verify(token)
 					.getSubject();

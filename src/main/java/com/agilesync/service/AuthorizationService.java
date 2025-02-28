@@ -5,6 +5,7 @@ import com.agilesync.domain.enumeration.UserRole;
 import com.agilesync.domain.entity.User;
 import com.agilesync.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -31,5 +32,10 @@ public class AuthorizationService implements UserDetailsService {
 		var newUser = new User(dto.getLogin(), encryptedPassword, dto.getEmail(), UserRole.USER);
 
 		this.userRepository.save(newUser);
+	}
+
+	public User getCurrentUser() {
+		var authentication = SecurityContextHolder.getContext().getAuthentication();
+		return (User) authentication.getPrincipal();
 	}
 }

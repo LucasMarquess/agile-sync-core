@@ -13,3 +13,5 @@ api:
   security:
     token:
       secret: ${JWT_SECRET:ezxi3zqSe5}
+  trello:
+    url: "https://api.trello.com/1"

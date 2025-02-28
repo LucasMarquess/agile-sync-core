@@ -1,4 +1,4 @@
-package com.agilesync.security;
+package com.agilesync.config.security;
 
 import com.agilesync.repository.UserRepository;
 import com.agilesync.service.TokenService;
@@ -9,7 +9,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -42,7 +41,7 @@ public class SecurityFilter extends OncePerRequestFilter {
 	private String recoverToken(HttpServletRequest request) {
 		var authHeader = request.getHeader("Authorization");
 
-		if (Objects.isNull(authHeader) || !authHeader.isEmpty()) {
+		if (Objects.isNull(authHeader) || authHeader.isEmpty()) {
 			return null;
 		}
 		return authHeader.replace("Bearer ", "");
