@@ -24,9 +24,6 @@ public abstract class IntegrationSettings {
 	@Column(nullable = false)
 	private String token;
 
-	@Column(nullable = false)
-	private String key;
-
 	@PrePersist
 	public void prePersist() {
 		this.createdAt = LocalDateTime.now();

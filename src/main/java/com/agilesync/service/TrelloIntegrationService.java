@@ -2,6 +2,7 @@ package com.agilesync.service;
 
 import com.agilesync.client.TrelloClient;
 import com.agilesync.domain.dto.TrelloBoardDTO;
+import com.agilesync.domain.dto.TrelloListDTO;
 import com.agilesync.domain.dto.TrelloSettingsDTO;
 import com.agilesync.domain.entity.TrelloSettings;
 import com.agilesync.domain.entity.UserIntegrationsSettings;
@@ -11,6 +12,7 @@ import com.agilesync.utils.ObjectUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +20,9 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class TrelloIntegrationService {
+
+	@Value("${api.trello.key}")
+	private String apiKey;
 
 	private final UserIntegrationsSettingsRepository userIntegrationsSettingsRepository;
 	private final TrelloSettingsRepository trelloSettingsRepository;
@@ -37,7 +42,7 @@ public class TrelloIntegrationService {
 			userIntegrations.setTrelloSettings(trelloSetting);
 		} else {
 			userIntegrations.getTrelloSettings().setToken(trelloSettingsDTO.getToken());
-			userIntegrations.getTrelloSettings().setKey(trelloSettingsDTO.getKey());
+			userIntegrations.getTrelloSettings().setBoardId(trelloSettingsDTO.getBoardId());
 		}
 
 		userIntegrationsSettingsRepository.save(userIntegrations);
@@ -46,7 +51,8 @@ public class TrelloIntegrationService {
 	public TrelloSettingsDTO getByUser() {
 		var user = authorizationService.getCurrentUser();
 		if (ObjectUtils.isNotNullOrEmpty(user)) {
-			return modelMapper.map(trelloSettingsRepository.findByUserId(user.getId()), TrelloSettingsDTO.class);
+			var entity = trelloSettingsRepository.findByUserId(user.getId());
+			return ObjectUtils.isNotNullOrEmpty(entity) ? modelMapper.map(entity, TrelloSettingsDTO.class) : null;
 		} else {
 			return null;
 		}
@@ -56,6 +62,13 @@ public class TrelloIntegrationService {
 		var settings = getByUser();
 		var fields = "id,name";
 
-		return trelloClient.getBoards(settings.getKey(), settings.getToken(), fields);
+		return trelloClient.getBoards(apiKey, settings.getToken(), fields);
+	}
+
+	public List<TrelloListDTO> getListsOfBoard(String boardId) {
+		var settings = getByUser();
+		var fields = "id,name";
+
+		return trelloClient.getBoardLists(boardId, apiKey, settings.getToken(), fields);
 	}
 }

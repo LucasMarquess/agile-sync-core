@@ -8,4 +8,7 @@ public interface TrelloSettingsRepository extends JpaRepository<TrelloSettings, 
 
 	@Query(" SELECT uis.trelloSettings FROM UserIntegrationsSettings uis WHERE uis.id = :userId")
 	TrelloSettings findByUserId(Long userId);
+
+	@Query("")
+	Boolean verifyUserHasIntegration(Long userId);
 }

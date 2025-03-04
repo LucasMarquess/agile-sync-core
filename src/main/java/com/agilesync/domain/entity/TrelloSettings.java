@@ -1,8 +1,6 @@
 package com.agilesync.domain.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,9 +9,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class TrelloSettings extends IntegrationSettings {
-
-	@Column(name = "card_mapping_name")
-	private String cardMappingName;
 
 	@Column(name = "board_id")
 	private String boardId;

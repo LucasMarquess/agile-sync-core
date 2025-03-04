@@ -10,7 +10,5 @@ public class TrelloSettingsDTO {
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
 	private String token;
-	private String key;
-	private String cardMappingName;
 	private String boardId;
 }

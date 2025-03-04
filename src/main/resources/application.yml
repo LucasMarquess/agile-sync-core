@@ -15,3 +15,9 @@ api:
       secret: ${JWT_SECRET:ezxi3zqSe5}
   trello:
     url: "https://api.trello.com/1"
+    key: "79bdb3bb32f7b42807fb87cc6772518b"
+
+logging:
+  level:
+    com.agilesync: debug
+    root: error

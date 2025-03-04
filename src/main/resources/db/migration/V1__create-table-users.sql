@@ -1,4 +1,4 @@
-CREATE TABLE users
+CREATE TABLE IF NOT EXISTS users
 (
     id       SERIAL PRIMARY KEY,
     login    VARCHAR(40)  NOT NULL UNIQUE,
