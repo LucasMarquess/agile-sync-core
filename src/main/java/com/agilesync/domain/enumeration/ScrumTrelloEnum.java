@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum ScrumTrelloEnum {
-	SPRINTS("Sprints"),
 	BACKLOG("Backlog"),
 	DESENVOLVIMENTO("Desenvolvimento"),
 	TESTES("Teste"),
