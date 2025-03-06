@@ -1,14 +1,12 @@
 package com.agilesync.domain.dto;
 
 import com.agilesync.domain.enumeration.ScrumTrelloEnum;
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
-@Builder
-public class CfdDataDTO {
+@AllArgsConstructor
+public class WipDTO {
 	private ScrumTrelloEnum stage;
-	private Integer quantityTotal;
-	private Integer quantityCards;
-	private String sprint;
+	private Integer quantity;
 }

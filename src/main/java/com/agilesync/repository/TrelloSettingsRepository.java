@@ -1,7 +1,6 @@
 package com.agilesync.repository;
 
 import com.agilesync.domain.entity.TrelloSettings;
-import com.agilesync.service.IntegrationsService;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

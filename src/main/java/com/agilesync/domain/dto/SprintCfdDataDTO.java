@@ -9,6 +9,10 @@ import java.util.List;
 @Builder
 public class SprintCfdDataDTO {
 	Integer sprintNumber;
-	String sprintName;
 	List<CfdDataDTO> cfdDatas;
+
+	private List<WipDTO> wipsByStage;
+	private Integer throughput;
+	private Double leadTime;
+	private Double cycleTime;
 }

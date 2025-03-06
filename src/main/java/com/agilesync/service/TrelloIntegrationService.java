@@ -16,11 +16,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class TrelloIntegrationService {
 
+	private static final double SPRINT_DAYS = 15;
 	@Value("${api.trello.key}")
 	private String apiKey;
 
@@ -86,7 +88,7 @@ public class TrelloIntegrationService {
 		}
 	}
 
-	public List<CfdDataDTO> generateMetrics(String initialPeriod, String finalPeriod) {
+	public List<SprintCfdDataDTO> generateMetrics(String initialPeriod, String finalPeriod) {
 		if (initialPeriod == null || finalPeriod == null) {
 			throw new BadRequestException("Os períodos inicial e final devem ser informados.");
 		}
@@ -118,7 +120,7 @@ public class TrelloIntegrationService {
 				.sorted(Comparator.comparingInt(label -> extractSprintNumber(label.getName())))
 				.toList();
 
-		return processMetrics(selectedPeriods);
+		return processMetricsCfd(selectedPeriods);
 	}
 
 	private int extractSprintNumber(String sprintName) {
@@ -130,7 +132,7 @@ public class TrelloIntegrationService {
 		return Integer.parseInt(number);
 	}
 
-	private List<CfdDataDTO> processMetrics(List<TrelloLabelDTO> selectedPeriods) {
+	private List<SprintCfdDataDTO> processMetricsCfd(List<TrelloLabelDTO> selectedPeriods) {
 		var integration = this.getByUser();
 		var mappings = this.trelloMappingService.findByTrelloSettings(integration.getId());
 
@@ -170,11 +172,81 @@ public class TrelloIntegrationService {
 
 				cfdData.add(CfdDataDTO.builder()
 						.stage(stage)
-						.quantity(cumulativeCounts.get(sprintName))
+						.quantityTotal(cumulativeCounts.get(sprintName))
+						.quantityCards(currentCount)
 						.sprint(sprintName)
 						.build());
 			}
 		}
-		return cfdData;
+		return convertToSprintCfdDataDTO(cfdData);
+	}
+
+	private List<SprintCfdDataDTO> convertToSprintCfdDataDTO(List<CfdDataDTO> cfdDataList) {
+		Map<String, SprintCfdDataDTO> sprintMap = new HashMap<>();
+
+		Map<String, Integer> throughputBySprint = calculateThroughputBySprint(cfdDataList);
+		var wipsBySprints = calculateWipBySprint(cfdDataList);
+
+		for (CfdDataDTO data : cfdDataList) {
+			String sprintName = data.getSprint();
+			int sprintNumber = extractSprintNumber(sprintName);
+			int throughput = throughputBySprint.getOrDefault(sprintName, 0);
+			var wip = wipsBySprints.get(sprintName);
+			double leadTime = calculateLeadTime(throughput);
+			double cycleTime = calculateCycleTime(wip, throughput);
+
+			sprintMap.computeIfAbsent(sprintName, key -> SprintCfdDataDTO.builder()
+					.sprintNumber(sprintNumber)
+					.cfdDatas(new ArrayList<>())
+					.wipsByStage(wip)
+					.throughput(throughput)
+					.leadTime(leadTime)
+					.cycleTime(cycleTime)
+					.build()
+			).getCfdDatas().add(data);
+		}
+
+		return sprintMap.values().stream()
+				.sorted(Comparator.comparing(SprintCfdDataDTO::getSprintNumber))
+				.toList();
+	}
+
+	private Map<String, Integer> calculateThroughputBySprint(List<CfdDataDTO> cfdDataList) {
+		return cfdDataList.stream()
+				.filter(data -> data.getStage() == ScrumTrelloEnum.PRONTO)
+				.collect(Collectors.groupingBy(
+						CfdDataDTO::getSprint,
+						Collectors.summingInt(CfdDataDTO::getQuantityCards)
+				));
+	}
+
+	private Map<String, List<WipDTO>> calculateWipBySprint(List<CfdDataDTO> cfdDataList) {
+		return cfdDataList.stream()
+				.filter(data -> data.getStage() != ScrumTrelloEnum.PRONTO && data.getStage() != ScrumTrelloEnum.BACKLOG)
+				.collect(Collectors.groupingBy(
+						CfdDataDTO::getSprint,
+						Collectors.groupingBy(
+								CfdDataDTO::getStage,
+								Collectors.summingInt(CfdDataDTO::getQuantityCards)
+						)
+				))
+				.entrySet().stream()
+				.collect(Collectors.toMap(
+						Map.Entry::getKey,
+						entry -> entry.getValue().entrySet().stream()
+								.map(stageEntry -> new WipDTO(stageEntry.getKey(), stageEntry.getValue()))
+								.collect(Collectors.toList())
+				));
+	}
+
+	private double calculateLeadTime(int throughput) {
+		return throughput > 0 ? SPRINT_DAYS / throughput : 0.0;
+	}
+
+	private double calculateCycleTime(List<WipDTO> wipList, int throughput) {
+		int totalWip = wipList.stream()
+				.mapToInt(WipDTO::getQuantity)
+				.sum();
+		return throughput > 0 ? (double) totalWip / throughput : 0.0;
 	}
 }
