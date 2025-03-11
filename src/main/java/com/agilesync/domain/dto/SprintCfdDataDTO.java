@@ -3,6 +3,7 @@ package com.agilesync.domain.dto;
 import lombok.Builder;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -13,6 +14,6 @@ public class SprintCfdDataDTO {
 
 	private List<WipDTO> wipsByStage;
 	private Integer throughput;
-	private Double leadTime;
-	private Double cycleTime;
+	private BigDecimal leadTime;
+	private BigDecimal cycleTime;
 }

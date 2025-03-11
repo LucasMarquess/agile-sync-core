@@ -14,7 +14,7 @@ public enum ScrumTrelloEnum {
 	ScrumTrelloEnum(String description) {
 		this.description = description;
 	}
-
+	
 	@JsonValue
 	public String getDescription() {
 		return description;

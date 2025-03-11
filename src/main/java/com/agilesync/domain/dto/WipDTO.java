@@ -9,4 +9,14 @@ import lombok.Data;
 public class WipDTO {
 	private ScrumTrelloEnum stage;
 	private Integer quantity;
+	private Integer sprintNumber;
+
+	public WipDTO(ScrumTrelloEnum stage, Integer quantity) {
+		this.stage = stage;
+		this.quantity = quantity;
+	}
+
+	public String getstageReport() {
+		return stage.getDescription();
+	}
 }
