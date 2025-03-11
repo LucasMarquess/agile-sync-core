@@ -2,6 +2,8 @@ package com.agilesync.utils;
 
 import lombok.experimental.UtilityClass;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Collection;
 import java.util.List;
 
@@ -29,5 +31,9 @@ public class ObjectUtils {
 		if (!list.contains(element)) {
 			list.add(element);
 		}
+	}
+
+	public BigDecimal truncateToTwoDecimals(BigDecimal value) {
+		return value.setScale(2, RoundingMode.DOWN);
 	}
 }

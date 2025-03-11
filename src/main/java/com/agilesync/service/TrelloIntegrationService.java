@@ -15,6 +15,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -88,7 +90,7 @@ public class TrelloIntegrationService {
 		}
 	}
 
-	public List<SprintCfdDataDTO> generateMetrics(String initialPeriod, String finalPeriod) {
+	public MetricsDTO generateMetrics(String initialPeriod, String finalPeriod) {
 		if (initialPeriod == null || finalPeriod == null) {
 			throw new BadRequestException("Os períodos inicial e final devem ser informados.");
 		}
@@ -120,7 +122,12 @@ public class TrelloIntegrationService {
 				.sorted(Comparator.comparingInt(label -> extractSprintNumber(label.getName())))
 				.toList();
 
-		return processMetricsCfd(selectedPeriods);
+		try {
+			return processMetricsCfd(selectedPeriods);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	private int extractSprintNumber(String sprintName) {
@@ -132,7 +139,7 @@ public class TrelloIntegrationService {
 		return Integer.parseInt(number);
 	}
 
-	private List<SprintCfdDataDTO> processMetricsCfd(List<TrelloLabelDTO> selectedPeriods) {
+	private MetricsDTO processMetricsCfd(List<TrelloLabelDTO> selectedPeriods) {
 		var integration = this.getByUser();
 		var mappings = this.trelloMappingService.findByTrelloSettings(integration.getId());
 
@@ -178,7 +185,12 @@ public class TrelloIntegrationService {
 						.build());
 			}
 		}
-		return convertToSprintCfdDataDTO(cfdData);
+
+		var metrics = MetricsDTO.builder()
+				.sprintCfdData(convertToSprintCfdDataDTO(cfdData))
+				.build();
+		metrics.setVelocity(this.calculateVelocity(metrics.getSprintCfdData()));
+		return metrics;
 	}
 
 	private List<SprintCfdDataDTO> convertToSprintCfdDataDTO(List<CfdDataDTO> cfdDataList) {
@@ -192,8 +204,8 @@ public class TrelloIntegrationService {
 			int sprintNumber = extractSprintNumber(sprintName);
 			int throughput = throughputBySprint.getOrDefault(sprintName, 0);
 			var wip = wipsBySprints.get(sprintName);
-			double leadTime = calculateLeadTime(throughput);
-			double cycleTime = calculateCycleTime(wip, throughput);
+			BigDecimal cycleTime = calculateCycleTime(throughput);
+			BigDecimal leadTime = calculateLeadTime(wip, throughput);
 
 			sprintMap.computeIfAbsent(sprintName, key -> SprintCfdDataDTO.builder()
 					.sprintNumber(sprintNumber)
@@ -239,14 +251,38 @@ public class TrelloIntegrationService {
 				));
 	}
 
-	private double calculateLeadTime(int throughput) {
-		return throughput > 0 ? SPRINT_DAYS / throughput : 0.0;
+	private BigDecimal calculateVelocity(List<SprintCfdDataDTO> cfdDataList) {
+		if (ObjectUtils.isNullOrEmpty(cfdDataList)) {
+			return BigDecimal.ZERO;
+		}
+
+		int total = cfdDataList.stream()
+				.mapToInt(SprintCfdDataDTO::getThroughput)
+				.sum();
+
+		return ObjectUtils.truncateToTwoDecimals(BigDecimal.valueOf(total)
+				.divide(BigDecimal.valueOf(cfdDataList.size()), 10, RoundingMode.DOWN));
 	}
 
-	private double calculateCycleTime(List<WipDTO> wipList, int throughput) {
+	private BigDecimal calculateCycleTime(int throughput) {
+		if (throughput <= 0) {
+			return BigDecimal.ZERO;
+		}
+
+		return ObjectUtils.truncateToTwoDecimals(BigDecimal.valueOf(SPRINT_DAYS)
+				.divide(BigDecimal.valueOf(throughput), 10, RoundingMode.DOWN));
+	}
+
+	private BigDecimal calculateLeadTime(List<WipDTO> wipList, int throughput) {
+		if (throughput <= 0) {
+			return BigDecimal.ZERO;
+		}
+
 		int totalWip = wipList.stream()
 				.mapToInt(WipDTO::getQuantity)
 				.sum();
-		return throughput > 0 ? (double) totalWip / throughput : 0.0;
+
+		return ObjectUtils.truncateToTwoDecimals(BigDecimal.valueOf(totalWip)
+				.divide(BigDecimal.valueOf(throughput), 10, RoundingMode.DOWN));
 	}
 }

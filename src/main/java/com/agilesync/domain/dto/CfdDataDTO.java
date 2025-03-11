@@ -11,4 +11,8 @@ public class CfdDataDTO {
 	private Integer quantityTotal;
 	private Integer quantityCards;
 	private String sprint;
+
+	public String getstageReport() {
+		return stage.toString();
+	}
 }
