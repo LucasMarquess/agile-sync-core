@@ -10,5 +10,6 @@ import java.util.List;
 @Builder
 public class MetricsDTO {
 	private BigDecimal velocity;
+	private String analysis;
 	private List<SprintCfdDataDTO> sprintCfdData;
 }

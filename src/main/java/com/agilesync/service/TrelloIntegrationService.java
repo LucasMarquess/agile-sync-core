@@ -32,6 +32,7 @@ public class TrelloIntegrationService {
 	private final TrelloSettingsRepository trelloSettingsRepository;
 	private final TrelloMappingService trelloMappingService;
 	private final AuthorizationService authorizationService;
+	private final CfdPatternAnalyzerService cfdPatternAnalyzer;
 	private final TrelloClient trelloClient;
 	private final ModelMapper modelMapper;
 
@@ -122,12 +123,9 @@ public class TrelloIntegrationService {
 				.sorted(Comparator.comparingInt(label -> extractSprintNumber(label.getName())))
 				.toList();
 
-		try {
-			return processMetricsCfd(selectedPeriods);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return null;
+		var metrics = processMetricsCfd(selectedPeriods);
+		metrics.setAnalysis(cfdPatternAnalyzer.analyzePatterns(metrics.getSprintCfdData()));
+		return metrics;
 	}
 
 	private int extractSprintNumber(String sprintName) {

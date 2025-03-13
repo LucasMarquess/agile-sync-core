@@ -44,6 +44,7 @@
 	<parameter name="FINAL_SPRINT" class="java.lang.String"/>
 	<parameter name="SPRINTS_METRICS" class="java.util.List"/>
 	<parameter name="WIPS" class="java.util.List"/>
+	<parameter name="ANALYSIS" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -151,7 +152,7 @@
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 				</reportElement>
 				<rectangle radius="15">
-					<reportElement x="0" y="0" width="164" height="180" backcolor="#F7F7F7" uuid="5c6eacdd-437e-4d3f-b3b7-77c07119fc47">
+					<reportElement x="0" y="0" width="164" height="200" backcolor="#F7F7F7" uuid="5c6eacdd-437e-4d3f-b3b7-77c07119fc47">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					</reportElement>
 					<graphicElement>
@@ -168,6 +169,13 @@
 					</textElement>
 					<text><![CDATA[* Análises:]]></text>
 				</staticText>
+				<textField textAdjust="ScaleFont">
+					<reportElement x="8" y="26" width="152" height="164" uuid="23558676-4a6a-4d2b-ab23-dc6fde7d4a81"/>
+					<textElement>
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{ANALYSIS}]]></textFieldExpression>
+				</textField>
 			</frame>
 		</band>
 		<band height="108">
