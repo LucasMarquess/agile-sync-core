@@ -35,8 +35,7 @@ public class TrelloController {
 
 	@PostMapping("/save")
 	public ResponseEntity<?> saveIntegrationTrello(@RequestBody TrelloSettingsDTO dto) {
-		trelloService.save(dto);
-		return ResponseEntity.ok().build();
+		return ResponseEntity.ok(trelloService.save(dto));
 	}
 
 	@GetMapping("")
@@ -67,7 +66,7 @@ public class TrelloController {
 
 	@GetMapping("/metrics")
 	public ResponseEntity<?> getMetrics(@RequestParam String initialPeriod, @RequestParam String finalPeriod) {
-		var response = trelloService.generateMetrics(initialPeriod, finalPeriod);
+		var response = trelloService.generateMetrics(initialPeriod, finalPeriod, false);
 		return ResponseEntity.ok(ObjectUtils.isNotNullOrEmpty(response) ? response : Collections.emptyList());
 	}
 }

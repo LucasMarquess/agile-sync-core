@@ -13,12 +13,12 @@ import java.util.stream.Collectors;
 @Service
 public class CfdPatternAnalyzerService {
 
-	public static String analyzePatterns(List<SprintCfdDataDTO> sprints) {
+	public static String analyzePatterns(List<SprintCfdDataDTO> sprints, boolean isReport) {
 		StringBuilder report = new StringBuilder();
-
 		Map<String, List<Integer>> patterns = new LinkedHashMap<>();
 
-		for (SprintCfdDataDTO sprint : sprints) {
+		for (Integer i = 0; i < sprints.size(); i++) {
+			var sprint = sprints.get(i);
 			int sprintNumber = sprint.getSprintNumber();
 			int totalWip = sprint.getWipsByStage().stream().mapToInt(WipDTO::getQuantity).sum();
 			int throughput = sprint.getThroughput();
@@ -37,7 +37,7 @@ public class CfdPatternAnalyzerService {
 			if (isBulgingSpacing(totalWip, throughput)) {
 				patterns.computeIfAbsent("Espaçamentos Protuberantes", k -> new ArrayList<>()).add(sprintNumber);
 			}
-			if (isStairSteps(sprint)) {
+			if (isStairSteps(sprints, i)) {
 				patterns.computeIfAbsent("Degraus da Escada", k -> new ArrayList<>()).add(sprintNumber);
 			}
 			if (isDisappearingSpacing(sprint)) {
@@ -46,34 +46,68 @@ public class CfdPatternAnalyzerService {
 		}
 
 		patterns.forEach((pattern, sprintsList) -> {
-			report.append(pattern).append(" identificado na(s) sprint(s): ")
+			report.append("<b> i. ").append(pattern).append("</b> - identificado na(s) sprint(s): ")
 					.append(sprintsList.stream().map(String::valueOf).collect(Collectors.joining(", ")))
-					.append(".\n");
+					.append(".<br>");
+			report.append("	<b>ii. Explicação: </b>");
+			switch (pattern) {
+			case "Diferença no Gradiente":
+				report.append("Trabalho em progresso (WIP) vs. total de itens prontos(throughput). WIP excede 80% do throughput, indicando aumento no trabalho em progresso.");
+				break;
+			case "Linhas Planas":
+				report.append("Total de itens prontos(throughput) igual a zero, indicando estagnação do fluxo de trabalho.");
+				break;
+			case "Curva-S":
+				report.append("Lead time e cycle time comparados. Se lead time for maior e trabalho em progresso (WIP) for superior a 5, há flutuação na produtividade.");
+				break;
+			case "Espaçamentos Protuberantes":
+				report.append("Trabalho em progresso (WIP) total superior ao dobro do total de itens prontos (throughput), indicando sobrecarga desproporcional.");
+				break;
+			case "Degraus da Escada":
+				report.append("Foi identificado comparando o total de itens prontos (throughput) de cada sprint com a anterior. ")
+						.append("Variações bruscas (+50% ou -50%) entre sprints podem indicar entregas em lotes, ")
+						.append("gargalos ou acúmulo de trabalho.\n");
+				break;
+			case "Espaçamentos Desaparecendo":
+				report.append("Ausência da fase 'Desenvolvimento' e presença da fase 'Pronto', indicando possíveis gaps ocultos no fluxo.");
+				break;
+			}
+			report.append("<br>");
+			if (isReport) {
+				report.append("<br>");
+			} else {
+				report.append("<hr>");
+			}
 		});
 
 		return report.toString();
 	}
 
 	private static boolean isGradientDifference(int totalWip, int throughput) {
-		return throughput < totalWip * 0.8; // Indicador de aumento do WIP
+		return throughput < totalWip * 0.8;
 	}
 
 	private static boolean isFlatLines(int throughput) {
-		return throughput == 0; // Indica estagnação do fluxo
+		return throughput == 0;
 	}
 
 	private static boolean isSCurve(BigDecimal leadTime, BigDecimal cycleTime, int totalWip) {
-		return leadTime.compareTo(cycleTime) > 0 && totalWip > 5; // Indica flutuação na produtividade
+		return leadTime.compareTo(cycleTime) > 0 && totalWip > 5;
 	}
 
 	private static boolean isBulgingSpacing(int totalWip, int throughput) {
-		return totalWip > throughput * 2 && throughput > 0; // Sobrecarga desproporcional
+		return totalWip > throughput * 2 && throughput > 0;
 	}
 
-	private static boolean isStairSteps(SprintCfdDataDTO sprint) {
-		return sprint.getCfdDatas().stream()
-				.collect(Collectors.groupingBy(CfdDataDTO::getSprint, Collectors.summingInt(CfdDataDTO::getQuantityCards)))
-				.values().stream().anyMatch(q -> q > sprint.getThroughput() / 3); // Entregas em lotes
+	private static boolean isStairSteps(List<SprintCfdDataDTO> sprints, int currentIndex) {
+		if (currentIndex == 0) {
+			return false;
+		}
+
+		int currentThroughput = sprints.get(currentIndex).getThroughput();
+		int previousThroughput = sprints.get(currentIndex - 1).getThroughput();
+
+		return previousThroughput > 0 && (currentThroughput > previousThroughput * 1.5 || previousThroughput > currentThroughput * 1.5);
 	}
 
 	private static boolean isDisappearingSpacing(SprintCfdDataDTO sprint) {
@@ -81,4 +115,3 @@ public class CfdPatternAnalyzerService {
 		return !stages.contains(ScrumTrelloEnum.DESENVOLVIMENTO) && stages.contains(ScrumTrelloEnum.PRONTO);
 	}
 }
-

@@ -18,7 +18,7 @@ public class ReportsService {
 	private final TrelloIntegrationService trelloIntegrationService;
 
 	public byte[] generateReportTrello(String initialPeriod, String finalPeriod) throws JRException, IOException {
-		var metric = this.trelloIntegrationService.generateMetrics(initialPeriod, finalPeriod);
+		var metric = this.trelloIntegrationService.generateMetrics(initialPeriod, finalPeriod, true);
 		List<CfdDataDTO> cfdDatas = new ArrayList<>();
 		List<ScrumTrelloEnum> stageOrder = List.of(
 				ScrumTrelloEnum.PRONTO,

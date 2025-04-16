@@ -107,7 +107,7 @@
 		</band>
 	</pageHeader>
 	<detail>
-		<band height="238" splitType="Stretch">
+		<band height="440" splitType="Stretch">
 			<stackedAreaChart>
 				<chart evaluationTime="Report">
 					<reportElement x="0" y="34" width="380" height="200" uuid="fb6529c2-53c3-4639-b98c-8e35fd892e3c"/>
@@ -146,13 +146,13 @@
 				<text><![CDATA[- Diagrama de Fluxo Cumulativo (CFD)]]></text>
 			</staticText>
 			<frame>
-				<reportElement x="390" y="34" width="164" height="180" uuid="72b0493b-5d6c-4e26-a0f7-7d949546dd7e">
+				<reportElement x="0" y="240" width="554" height="180" uuid="72b0493b-5d6c-4e26-a0f7-7d949546dd7e">
 					<property name="com.jaspersoft.studio.element.name" value="ANALISES"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 				</reportElement>
 				<rectangle radius="15">
-					<reportElement x="0" y="0" width="164" height="200" backcolor="#F7F7F7" uuid="5c6eacdd-437e-4d3f-b3b7-77c07119fc47">
+					<reportElement x="0" y="0" width="553" height="180" backcolor="#F7F7F7" uuid="5c6eacdd-437e-4d3f-b3b7-77c07119fc47">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					</reportElement>
 					<graphicElement>
@@ -169,9 +169,9 @@
 					</textElement>
 					<text><![CDATA[* Análises:]]></text>
 				</staticText>
-				<textField textAdjust="ScaleFont">
-					<reportElement x="8" y="26" width="152" height="164" uuid="23558676-4a6a-4d2b-ab23-dc6fde7d4a81"/>
-					<textElement>
+				<textField textAdjust="ScaleFont" isBlankWhenNull="true">
+					<reportElement x="8" y="26" width="535" height="144" uuid="23558676-4a6a-4d2b-ab23-dc6fde7d4a81"/>
+					<textElement markup="html">
 						<font fontName="DejaVu Sans" size="9"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$P{ANALYSIS}]]></textFieldExpression>

@@ -37,7 +37,7 @@ public class TrelloIntegrationService {
 	private final ModelMapper modelMapper;
 
 	@Transactional
-	public void save(TrelloSettingsDTO trelloSettingsDTO) {
+	public TrelloSettingsDTO save(TrelloSettingsDTO trelloSettingsDTO) {
 		var user = authorizationService.getCurrentUser();
 		var trelloSetting = modelMapper.map(trelloSettingsDTO, TrelloSettings.class);
 
@@ -52,6 +52,8 @@ public class TrelloIntegrationService {
 		}
 
 		userIntegrationsSettingsRepository.save(userIntegrations);
+
+		return modelMapper.map(userIntegrations, TrelloSettingsDTO.class);
 	}
 
 	public TrelloSettingsDTO getByUser() {
@@ -91,7 +93,7 @@ public class TrelloIntegrationService {
 		}
 	}
 
-	public MetricsDTO generateMetrics(String initialPeriod, String finalPeriod) {
+	public MetricsDTO generateMetrics(String initialPeriod, String finalPeriod, boolean isReport) {
 		if (initialPeriod == null || finalPeriod == null) {
 			throw new BadRequestException("Os períodos inicial e final devem ser informados.");
 		}
@@ -124,7 +126,7 @@ public class TrelloIntegrationService {
 				.toList();
 
 		var metrics = processMetricsCfd(selectedPeriods);
-		metrics.setAnalysis(cfdPatternAnalyzer.analyzePatterns(metrics.getSprintCfdData()));
+		metrics.setAnalysis(cfdPatternAnalyzer.analyzePatterns(metrics.getSprintCfdData(), isReport));
 		return metrics;
 	}
 
