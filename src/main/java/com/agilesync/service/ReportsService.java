@@ -17,8 +17,9 @@ public class ReportsService {
 	private final ApplicationContext applicationContext;
 	private final TrelloIntegrationService trelloIntegrationService;
 
-	public byte[] generateReportTrello(String initialPeriod, String finalPeriod) throws JRException, IOException {
-		var metric = this.trelloIntegrationService.generateMetrics(initialPeriod, finalPeriod, true);
+	public byte[] generateReportTrello(Long integrationId, String initialPeriod, String finalPeriod) throws JRException, IOException {
+		var integration = this.trelloIntegrationService.getById(integrationId);
+		var metric = this.trelloIntegrationService.generateMetrics(integrationId, initialPeriod, finalPeriod, true);
 		List<CfdDataDTO> cfdDatas = new ArrayList<>();
 		List<ScrumTrelloEnum> stageOrder = List.of(
 				ScrumTrelloEnum.PRONTO,
@@ -47,10 +48,12 @@ public class ReportsService {
 		hashMap.put("CFD_DATAS", cfdDatas);
 		hashMap.put("SPRINTS_METRICS", metric.getSprintCfdData());
 		hashMap.put("WIPS", sprintsWips);
+		hashMap.put("INTEGRATION_NAME", integration.getName());
 		hashMap.put("REPORT_LOCALE", new Locale("pt", "BR"));
 
-		String jasperFilePath = pathRelatorios + "/report-metrics.jasper";
-		JasperPrint jasperPrint = JasperFillManager.fillReport(jasperFilePath, hashMap, new JREmptyDataSource());
+		String jrxmlFilePath = pathRelatorios + "/report-metrics.jrxml";
+		JasperReport jasperReport = JasperCompileManager.compileReport(jrxmlFilePath);
+		JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, hashMap, new JREmptyDataSource());
 		return JasperExportManager.exportReportToPdf(jasperPrint);
 	}
 }

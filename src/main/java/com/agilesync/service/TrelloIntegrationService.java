@@ -1,13 +1,11 @@
 package com.agilesync.service;
 
-import com.agilesync.client.TrelloClient;
+import com.agilesync.client.AgileToolClient;
 import com.agilesync.domain.dto.*;
 import com.agilesync.domain.entity.TrelloSettings;
-import com.agilesync.domain.entity.UserIntegrationsSettings;
 import com.agilesync.domain.enumeration.ScrumTrelloEnum;
 import com.agilesync.exceptions.BadRequestException;
 import com.agilesync.repository.TrelloSettingsRepository;
-import com.agilesync.repository.UserIntegrationsSettingsRepository;
 import com.agilesync.utils.ObjectUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -28,84 +26,104 @@ public class TrelloIntegrationService {
 	@Value("${api.trello.key}")
 	private String apiKey;
 
-	private final UserIntegrationsSettingsRepository userIntegrationsSettingsRepository;
 	private final TrelloSettingsRepository trelloSettingsRepository;
 	private final TrelloMappingService trelloMappingService;
 	private final AuthorizationService authorizationService;
 	private final CfdPatternAnalyzerService cfdPatternAnalyzer;
-	private final TrelloClient trelloClient;
+	private final AgileToolClient agileToolClient;
 	private final ModelMapper modelMapper;
+
+	private TrelloSettings resolveOwnedIntegration(Long integrationId) {
+		if (integrationId == null) {
+			throw new BadRequestException("O identificador da integração deve ser informado.");
+		}
+		var user = authorizationService.getCurrentUser();
+		return trelloSettingsRepository.findByIdAndUserId(integrationId, user.getId())
+				.orElseThrow(() -> new BadRequestException("Integração não encontrada ou não pertence ao usuário."));
+	}
+
+	private AgileToolClient resolveClient(TrelloSettings integration) {
+		return agileToolClient;
+	}
 
 	@Transactional
 	public TrelloSettingsDTO save(TrelloSettingsDTO trelloSettingsDTO) {
 		var user = authorizationService.getCurrentUser();
-		var trelloSetting = modelMapper.map(trelloSettingsDTO, TrelloSettings.class);
+		TrelloSettings entity;
 
-		UserIntegrationsSettings userIntegrations = userIntegrationsSettingsRepository.findByUserId(user.getId())
-				.orElse(new UserIntegrationsSettings());
-		userIntegrations.setUser(user);
-		if (ObjectUtils.isNullOrEmpty(userIntegrations.getTrelloSettings())) {
-			userIntegrations.setTrelloSettings(trelloSetting);
+		if (trelloSettingsDTO.getId() != null) {
+			entity = resolveOwnedIntegration(trelloSettingsDTO.getId());
+			entity.setToken(trelloSettingsDTO.getToken());
+			entity.setBoardId(trelloSettingsDTO.getBoardId());
+			if (ObjectUtils.isNotNullOrEmpty(trelloSettingsDTO.getName())) {
+				entity.setName(trelloSettingsDTO.getName());
+			}
 		} else {
-			userIntegrations.getTrelloSettings().setToken(trelloSettingsDTO.getToken());
-			userIntegrations.getTrelloSettings().setBoardId(trelloSettingsDTO.getBoardId());
+			boolean isDuplicate = ObjectUtils.isNotNullOrEmpty(trelloSettingsDTO.getBoardId())
+					&& trelloSettingsRepository.existsByUserIdAndBoardIdAndToken(
+							user.getId(), trelloSettingsDTO.getBoardId(), trelloSettingsDTO.getToken());
+			if (isDuplicate) {
+				throw new BadRequestException("Já existe uma integração com este mesmo board e token.");
+			}
+
+			entity = modelMapper.map(trelloSettingsDTO, TrelloSettings.class);
+			entity.setId(null);
+			entity.setUser(user);
+			if (ObjectUtils.isNullOrEmpty(entity.getName())) {
+				entity.setName("Integração Trello");
+			}
 		}
 
-		userIntegrationsSettingsRepository.save(userIntegrations);
-
-		return modelMapper.map(userIntegrations, TrelloSettingsDTO.class);
+		trelloSettingsRepository.save(entity);
+		return modelMapper.map(entity, TrelloSettingsDTO.class);
 	}
 
-	public TrelloSettingsDTO getByUser() {
-		var user = authorizationService.getCurrentUser();
-		if (ObjectUtils.isNotNullOrEmpty(user)) {
-			var entity = trelloSettingsRepository.findByUserId(user.getId());
-			return ObjectUtils.isNotNullOrEmpty(entity) ? modelMapper.map(entity, TrelloSettingsDTO.class) : null;
-		} else {
-			return null;
-		}
+	public TrelloSettingsDTO getById(Long integrationId) {
+		var entity = resolveOwnedIntegration(integrationId);
+		return modelMapper.map(entity, TrelloSettingsDTO.class);
 	}
 
-	public List<TrelloBoardDTO> getBoards() {
-		var settings = getByUser();
+	public List<? extends BoardDTO> getBoards(Long integrationId) {
+		var integration = resolveOwnedIntegration(integrationId);
 		var fields = "id,name";
 
-		return trelloClient.getBoards(apiKey, settings.getToken(), fields);
+		return resolveClient(integration).getBoards(apiKey, integration.getToken(), fields);
 	}
 
-	public List<TrelloListDTO> getListsOfBoard(String boardId) {
-		var settings = getByUser();
+	public List<? extends ListDTO> getListsOfBoard(Long integrationId, String boardId) {
+		var integration = resolveOwnedIntegration(integrationId);
 		var fields = "id,name";
 
-		return trelloClient.getBoardLists(boardId, apiKey, settings.getToken(), fields);
+		return resolveClient(integration).getBoardLists(boardId, apiKey, integration.getToken(), fields);
 	}
 
-	public List<TrelloLabelDTO> getLabelsBoardByUser() {
-		var settings = getByUser();
-		var labels = trelloClient.getBoardLabels(settings.getBoardId(), apiKey, settings.getToken(), "id,name");
+	public List<? extends LabelDTO> getLabelsBoardByUser(Long integrationId) {
+		var integration = resolveOwnedIntegration(integrationId);
+		var labels = resolveClient(integration)
+				.getBoardLabels(integration.getBoardId(), apiKey, integration.getToken(), "id,name");
 
 		if (ObjectUtils.isNotNullOrEmpty(labels)) {
 			return labels.stream()
-					.sorted(Comparator.comparing(TrelloLabelDTO::getName))
+					.sorted(Comparator.comparing(LabelDTO::getName))
 					.toList();
 		} else {
 			return Collections.emptyList();
 		}
 	}
 
-	public MetricsDTO generateMetrics(String initialPeriod, String finalPeriod, boolean isReport) {
+	public MetricsDTO generateMetrics(Long integrationId, String initialPeriod, String finalPeriod, boolean isReport) {
 		if (initialPeriod == null || finalPeriod == null) {
 			throw new BadRequestException("Os períodos inicial e final devem ser informados.");
 		}
 
-		var labels = this.getLabelsBoardByUser();
+		var labels = this.getLabelsBoardByUser(integrationId);
 
-		TrelloLabelDTO initialLabel = labels.stream()
+		LabelDTO initialLabel = labels.stream()
 				.filter(label -> label.getName().equalsIgnoreCase(initialPeriod))
 				.findFirst()
 				.orElseThrow(() -> new BadRequestException("Período inicial não encontrado: " + initialPeriod));
 
-		TrelloLabelDTO finalLabel = labels.stream()
+		LabelDTO finalLabel = labels.stream()
 				.filter(label -> label.getName().equalsIgnoreCase(finalPeriod))
 				.findFirst()
 				.orElseThrow(() -> new BadRequestException("Período final não encontrado: " + finalPeriod));
@@ -117,7 +135,7 @@ public class TrelloIntegrationService {
 			throw new BadRequestException("O período inicial não pode ser maior que o período final.");
 		}
 
-		List<TrelloLabelDTO> selectedPeriods = labels.stream()
+		List<? extends LabelDTO> selectedPeriods = labels.stream()
 				.filter(label -> {
 					int sprintNumber = extractSprintNumber(label.getName());
 					return sprintNumber >= sprintInicial && sprintNumber <= sprintFinal;
@@ -125,7 +143,7 @@ public class TrelloIntegrationService {
 				.sorted(Comparator.comparingInt(label -> extractSprintNumber(label.getName())))
 				.toList();
 
-		var metrics = processMetricsCfd(selectedPeriods);
+		var metrics = processMetricsCfd(integrationId, selectedPeriods);
 		metrics.setAnalysis(cfdPatternAnalyzer.analyzePatterns(metrics.getSprintCfdData(), isReport));
 		return metrics;
 	}
@@ -139,8 +157,9 @@ public class TrelloIntegrationService {
 		return Integer.parseInt(number);
 	}
 
-	private MetricsDTO processMetricsCfd(List<TrelloLabelDTO> selectedPeriods) {
-		var integration = this.getByUser();
+	private MetricsDTO processMetricsCfd(Long integrationId, List<? extends LabelDTO> selectedPeriods) {
+		var integration = resolveOwnedIntegration(integrationId);
+		var client = resolveClient(integration);
 		var mappings = this.trelloMappingService.findByTrelloSettings(integration.getId());
 
 		var cfdData = new ArrayList<CfdDataDTO>();
@@ -151,7 +170,7 @@ public class TrelloIntegrationService {
 			var listId = map.getListId();
 			var stage = map.getReferent();
 
-			var cards = trelloClient.getCardsFromList(listId, apiKey, integration.getToken(), "id,name,labels");
+			var cards = client.getCardsFromList(listId, apiKey, integration.getToken(), "id,name,labels");
 
 			var sprintCounts = new HashMap<String, Integer>();
 

@@ -21,9 +21,12 @@ public class ReportsController {
 	private final ReportsService reportsService;
 
 	@GetMapping("metrics-trello")
-	public ResponseEntity gerarRelatorioPdf(@RequestParam String initialPeriod, @RequestParam String finalPeriod) {
+	public ResponseEntity gerarRelatorioPdf(
+			@RequestParam Long integrationId,
+			@RequestParam String initialPeriod,
+			@RequestParam String finalPeriod) {
 		try {
-			byte[] relatorio = reportsService.generateReportTrello(initialPeriod, finalPeriod);
+			byte[] relatorio = reportsService.generateReportTrello(integrationId, initialPeriod, finalPeriod);
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.parseMediaType("application/pdf"));
 			headers.setContentDispositionFormData("relatorio-metricas.pdf", "relatorio-metricas.pdf");

@@ -8,7 +8,7 @@ spring:
     driverClassName: org.postgresql.Driver
     maximumPoolSize: 5
   jpa:
-    show-sql: true
+    show-sql: false
 api:
   security:
     token:

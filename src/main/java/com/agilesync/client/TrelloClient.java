@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 
 @FeignClient(name = "trelloClient", url = "${api.trello.url}")
-public interface TrelloClient {
+public interface TrelloClient extends AgileToolClient {
 
 	@GetMapping("/members/me/boards")
 	List<TrelloBoardDTO> getBoards(

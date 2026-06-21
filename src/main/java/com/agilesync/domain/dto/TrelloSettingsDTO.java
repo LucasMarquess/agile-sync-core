@@ -11,4 +11,5 @@ public class TrelloSettingsDTO {
 	private LocalDateTime updatedAt;
 	private String token;
 	private String boardId;
+	private String name;
 }

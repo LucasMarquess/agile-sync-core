@@ -47,6 +47,7 @@
 	<parameter name="SPRINTS_METRICS" class="java.util.List"/>
 	<parameter name="WIPS" class="java.util.List"/>
 	<parameter name="ANALYSIS" class="java.lang.String"/>
+	<parameter name="INTEGRATION_NAME" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -104,6 +105,18 @@
 						<font fontName="DejaVu Sans" size="9"/>
 					</textElement>
 					<textFieldExpression><![CDATA["Período: " + $P{INITIAL_SPRINT} + " a " + $P{FINAL_SPRINT}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="80" y="33" width="239" height="16" uuid="b1c2d3e4-f5a6-47b8-9c0d-1e2f3a4b5c6e">
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						<property name="com.jaspersoft.studio.unit.x" value="px"/>
+						<property name="com.jaspersoft.studio.unit.width" value="px"/>
+						<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					</reportElement>
+					<textElement textAlignment="Left" verticalAlignment="Bottom">
+						<font fontName="DejaVu Sans" size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Integração: " + $P{INTEGRATION_NAME}]]></textFieldExpression>
 				</textField>
 			</frame>
 		</band>

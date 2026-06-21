@@ -24,6 +24,16 @@ public abstract class IntegrationSettings {
 	@Column(nullable = false)
 	private String token;
 
+	@Column(name = "name", nullable = false)
+	private String name;
+
+	@Column(name = "active", nullable = false)
+	private Boolean active = true;
+
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
+	private User user;
+
 	@PrePersist
 	public void prePersist() {
 		this.createdAt = LocalDateTime.now();

@@ -20,15 +20,16 @@ public class TrelloController {
 	private final TrelloMappingService trelloMappingService;
 
 	@GetMapping("/boards")
-	public ResponseEntity<List<TrelloBoardDTO>> getUserBoards() {
-		List<TrelloBoardDTO> response = trelloService.getBoards();
+	public ResponseEntity<List<? extends BoardDTO>> getUserBoards(@RequestParam Long integrationId) {
+		List<? extends BoardDTO> response = trelloService.getBoards(integrationId);
 
 		return ResponseEntity.ok(ObjectUtils.isNotNullOrEmpty(response) ? response : Collections.emptyList());
 	}
 
 	@GetMapping("/{boardId}/lists")
-	public ResponseEntity<List<TrelloListDTO>> getListsByBoardId(@PathVariable String boardId) {
-		List<TrelloListDTO> response = trelloService.getListsOfBoard(boardId);
+	public ResponseEntity<List<? extends ListDTO>> getListsByBoardId(
+			@PathVariable String boardId, @RequestParam Long integrationId) {
+		List<? extends ListDTO> response = trelloService.getListsOfBoard(integrationId, boardId);
 
 		return ResponseEntity.ok(ObjectUtils.isNotNullOrEmpty(response) ? response : Collections.emptyList());
 	}
@@ -38,9 +39,9 @@ public class TrelloController {
 		return ResponseEntity.ok(trelloService.save(dto));
 	}
 
-	@GetMapping("")
-	public ResponseEntity<TrelloSettingsDTO> getIntegrationTrelloUser() {
-		var response = trelloService.getByUser();
+	@GetMapping("/{integrationId}")
+	public ResponseEntity<TrelloSettingsDTO> getIntegrationTrelloUser(@PathVariable Long integrationId) {
+		var response = trelloService.getById(integrationId);
 
 		return ResponseEntity.ok(response);
 	}
@@ -51,22 +52,25 @@ public class TrelloController {
 		return ResponseEntity.ok().build();
 	}
 
-	@GetMapping("/{trelloSettingsId}/mappings")
-	public ResponseEntity<List<TrelloMappingDTO>> getListsByBoardId(@PathVariable Long trelloSettingsId) {
-		var response = trelloMappingService.findByTrelloSettings(trelloSettingsId);
+	@GetMapping("/{integrationId}/mappings")
+	public ResponseEntity<List<TrelloMappingDTO>> getMappingsByIntegration(@PathVariable Long integrationId) {
+		var response = trelloMappingService.findByTrelloSettings(integrationId);
 
 		return ResponseEntity.ok(ObjectUtils.isNotNullOrEmpty(response) ? response : Collections.emptyList());
 	}
 
 	@GetMapping("/labels")
-	public ResponseEntity<List<TrelloLabelDTO>> getLabelsBoardByUser() {
-		List<TrelloLabelDTO> response = trelloService.getLabelsBoardByUser();
+	public ResponseEntity<List<? extends LabelDTO>> getLabelsBoardByUser(@RequestParam Long integrationId) {
+		List<? extends LabelDTO> response = trelloService.getLabelsBoardByUser(integrationId);
 		return ResponseEntity.ok(ObjectUtils.isNotNullOrEmpty(response) ? response : Collections.emptyList());
 	}
 
 	@GetMapping("/metrics")
-	public ResponseEntity<?> getMetrics(@RequestParam String initialPeriod, @RequestParam String finalPeriod) {
-		var response = trelloService.generateMetrics(initialPeriod, finalPeriod, false);
+	public ResponseEntity<?> getMetrics(
+			@RequestParam Long integrationId,
+			@RequestParam String initialPeriod,
+			@RequestParam String finalPeriod) {
+		var response = trelloService.generateMetrics(integrationId, initialPeriod, finalPeriod, false);
 		return ResponseEntity.ok(ObjectUtils.isNotNullOrEmpty(response) ? response : Collections.emptyList());
 	}
 }

@@ -16,6 +16,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 
+import java.util.List;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfigurations {
@@ -41,9 +43,12 @@ public class SecurityConfigurations {
 							response.sendError(HttpServletResponse.SC_FORBIDDEN, "Acesso negado");
 						})
 				)
-				.cors(cors -> cors.configurationSource(request ->
-						new CorsConfiguration().applyPermitDefaultValues())
-				)
+				.cors(cors -> cors.configurationSource(request -> {
+					var configuration = new CorsConfiguration().applyPermitDefaultValues();
+					configuration.setAllowedMethods(
+							List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+					return configuration;
+				}))
 				.addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
 				.build();
 	}
