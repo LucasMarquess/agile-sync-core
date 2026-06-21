@@ -16,4 +16,6 @@ public class SprintCfdDataDTO {
 	private Integer throughput;
 	private BigDecimal leadTime;
 	private BigDecimal cycleTime;
+	private BigDecimal flowEfficiency;
+	private Integer netFlow;
 }

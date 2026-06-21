@@ -198,14 +198,19 @@ public class TrelloIntegrationService {
 
 		Map<String, Integer> throughputBySprint = calculateThroughputBySprint(cfdDataList);
 		var wipsBySprints = calculateWipBySprint(cfdDataList);
+		Map<String, Integer> backlogWipBySprint = calculateBacklogWipBySprint(cfdDataList);
 
 		for (CfdDataDTO data : cfdDataList) {
 			String sprintName = data.getSprint();
 			int sprintNumber = extractSprintNumber(sprintName);
 			int throughput = throughputBySprint.getOrDefault(sprintName, 0);
-			var wip = wipsBySprints.get(sprintName);
-			BigDecimal cycleTime = calculateCycleTime(throughput);
-			BigDecimal leadTime = calculateLeadTime(wip, throughput);
+			var wip = wipsBySprints.getOrDefault(sprintName, Collections.emptyList());
+			int wipEmProgresso = wip.stream().mapToInt(WipDTO::getQuantity).sum();
+			int wipBacklog = backlogWipBySprint.getOrDefault(sprintName, 0);
+			BigDecimal cycleTime = calculateCycleTime(wipEmProgresso, throughput);
+			BigDecimal leadTime = calculateLeadTime(wipEmProgresso, wipBacklog, throughput);
+			BigDecimal flowEfficiency = calculateFlowEfficiency(wipEmProgresso, wipBacklog);
+			int netFlow = calculateNetFlow(wipBacklog, throughput);
 
 			sprintMap.computeIfAbsent(sprintName, key -> SprintCfdDataDTO.builder()
 					.sprintNumber(sprintNumber)
@@ -214,6 +219,8 @@ public class TrelloIntegrationService {
 					.throughput(throughput)
 					.leadTime(leadTime)
 					.cycleTime(cycleTime)
+					.flowEfficiency(flowEfficiency)
+					.netFlow(netFlow)
 					.build()
 			).getCfdDatas().add(data);
 		}
@@ -226,6 +233,15 @@ public class TrelloIntegrationService {
 	private Map<String, Integer> calculateThroughputBySprint(List<CfdDataDTO> cfdDataList) {
 		return cfdDataList.stream()
 				.filter(data -> data.getStage() == ScrumTrelloEnum.PRONTO)
+				.collect(Collectors.groupingBy(
+						CfdDataDTO::getSprint,
+						Collectors.summingInt(CfdDataDTO::getQuantityCards)
+				));
+	}
+
+	private Map<String, Integer> calculateBacklogWipBySprint(List<CfdDataDTO> cfdDataList) {
+		return cfdDataList.stream()
+				.filter(data -> data.getStage() == ScrumTrelloEnum.BACKLOG)
 				.collect(Collectors.groupingBy(
 						CfdDataDTO::getSprint,
 						Collectors.summingInt(CfdDataDTO::getQuantityCards)
@@ -264,25 +280,41 @@ public class TrelloIntegrationService {
 				.divide(BigDecimal.valueOf(cfdDataList.size()), 10, RoundingMode.DOWN));
 	}
 
-	private BigDecimal calculateCycleTime(int throughput) {
+	private BigDecimal calculateCycleTime(int wipEmProgresso, int throughput) {
 		if (throughput <= 0) {
 			return BigDecimal.ZERO;
 		}
 
-		return ObjectUtils.truncateToTwoDecimals(BigDecimal.valueOf(SPRINT_DAYS)
+		return ObjectUtils.truncateToTwoDecimals(BigDecimal.valueOf(wipEmProgresso)
+				.multiply(BigDecimal.valueOf(SPRINT_DAYS))
 				.divide(BigDecimal.valueOf(throughput), 10, RoundingMode.DOWN));
 	}
 
-	private BigDecimal calculateLeadTime(List<WipDTO> wipList, int throughput) {
+	private BigDecimal calculateLeadTime(int wipEmProgresso, int wipBacklog, int throughput) {
 		if (throughput <= 0) {
 			return BigDecimal.ZERO;
 		}
 
-		int totalWip = wipList.stream()
-				.mapToInt(WipDTO::getQuantity)
-				.sum();
+		int wipTotal = wipEmProgresso + wipBacklog;
 
-		return ObjectUtils.truncateToTwoDecimals(BigDecimal.valueOf(totalWip)
+		return ObjectUtils.truncateToTwoDecimals(BigDecimal.valueOf(wipTotal)
+				.multiply(BigDecimal.valueOf(SPRINT_DAYS))
 				.divide(BigDecimal.valueOf(throughput), 10, RoundingMode.DOWN));
+	}
+
+	private BigDecimal calculateFlowEfficiency(int wipEmProgresso, int wipBacklog) {
+		int wipTotal = wipEmProgresso + wipBacklog;
+
+		if (wipTotal <= 0) {
+			return BigDecimal.ZERO;
+		}
+
+		return ObjectUtils.truncateToTwoDecimals(BigDecimal.valueOf(wipEmProgresso)
+				.multiply(BigDecimal.valueOf(100))
+				.divide(BigDecimal.valueOf(wipTotal), 10, RoundingMode.DOWN));
+	}
+
+	private int calculateNetFlow(int wipBacklog, int throughput) {
+		return wipBacklog - throughput;
 	}
 }
