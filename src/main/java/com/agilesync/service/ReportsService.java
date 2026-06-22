@@ -2,7 +2,7 @@ package com.agilesync.service;
 
 import com.agilesync.domain.dto.CfdDataDTO;
 import com.agilesync.domain.dto.WipDTO;
-import com.agilesync.domain.enumeration.ScrumTrelloEnum;
+import com.agilesync.domain.enumeration.ScrumStagesEnum;
 import lombok.RequiredArgsConstructor;
 import net.sf.jasperreports.engine.*;
 import org.springframework.context.ApplicationContext;
@@ -21,11 +21,11 @@ public class ReportsService {
 		var integration = this.trelloIntegrationService.getById(integrationId);
 		var metric = this.trelloIntegrationService.generateMetrics(integrationId, initialPeriod, finalPeriod, true);
 		List<CfdDataDTO> cfdDatas = new ArrayList<>();
-		List<ScrumTrelloEnum> stageOrder = List.of(
-				ScrumTrelloEnum.PRONTO,
-				ScrumTrelloEnum.TESTES,
-				ScrumTrelloEnum.DESENVOLVIMENTO,
-				ScrumTrelloEnum.BACKLOG
+		List<ScrumStagesEnum> stageOrder = List.of(
+				ScrumStagesEnum.PRONTO,
+				ScrumStagesEnum.TESTES,
+				ScrumStagesEnum.DESENVOLVIMENTO,
+				ScrumStagesEnum.BACKLOG
 		);
 
 		var sprintsWips = new ArrayList<WipDTO>();

@@ -1,17 +1,17 @@
 package com.agilesync.domain.dto;
 
-import com.agilesync.domain.enumeration.ScrumTrelloEnum;
+import com.agilesync.domain.enumeration.ScrumStagesEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
 @AllArgsConstructor
 public class WipDTO {
-	private ScrumTrelloEnum stage;
+	private ScrumStagesEnum stage;
 	private Integer quantity;
 	private Integer sprintNumber;
 
-	public WipDTO(ScrumTrelloEnum stage, Integer quantity) {
+	public WipDTO(ScrumStagesEnum stage, Integer quantity) {
 		this.stage = stage;
 		this.quantity = quantity;
 	}

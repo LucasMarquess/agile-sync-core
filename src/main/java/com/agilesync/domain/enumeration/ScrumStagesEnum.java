@@ -3,7 +3,7 @@ package com.agilesync.domain.enumeration;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public enum ScrumTrelloEnum {
+public enum ScrumStagesEnum {
 	BACKLOG("Backlog"),
 	DESENVOLVIMENTO("Desenvolvimento"),
 	TESTES("Teste"),
@@ -11,7 +11,7 @@ public enum ScrumTrelloEnum {
 
 	private final String description;
 
-	ScrumTrelloEnum(String description) {
+	ScrumStagesEnum(String description) {
 		this.description = description;
 	}
 	
@@ -21,8 +21,8 @@ public enum ScrumTrelloEnum {
 	}
 
 	@JsonCreator
-	public static ScrumTrelloEnum fromDescription(String description) {
-		for (ScrumTrelloEnum value : ScrumTrelloEnum.values()) {
+	public static ScrumStagesEnum fromDescription(String description) {
+		for (ScrumStagesEnum value : ScrumStagesEnum.values()) {
 			if (value.description.equalsIgnoreCase(description)) {
 				return value;
 			}

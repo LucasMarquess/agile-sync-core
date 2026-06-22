@@ -1,9 +1,8 @@
 package com.agilesync.service;
 
-import com.agilesync.domain.dto.CfdDataDTO;
 import com.agilesync.domain.dto.SprintCfdDataDTO;
 import com.agilesync.domain.dto.WipDTO;
-import com.agilesync.domain.enumeration.ScrumTrelloEnum;
+import com.agilesync.domain.enumeration.ScrumStagesEnum;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -140,11 +139,11 @@ public class CfdPatternAnalyzerService {
 
 	private static boolean isDisappearingSpacing(SprintCfdDataDTO sprint) {
 		boolean desenvolvimentoVazio = sprint.getCfdDatas().stream()
-				.filter(data -> data.getStage() == ScrumTrelloEnum.DESENVOLVIMENTO)
+				.filter(data -> data.getStage() == ScrumStagesEnum.DESENVOLVIMENTO)
 				.allMatch(data -> data.getQuantityCards() == 0);
 
 		boolean prontoComItens = sprint.getCfdDatas().stream()
-				.filter(data -> data.getStage() == ScrumTrelloEnum.PRONTO)
+				.filter(data -> data.getStage() == ScrumStagesEnum.PRONTO)
 				.anyMatch(data -> data.getQuantityCards() > 0);
 
 		return desenvolvimentoVazio && prontoComItens;

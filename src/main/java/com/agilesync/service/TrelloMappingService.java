@@ -3,7 +3,7 @@ package com.agilesync.service;
 import com.agilesync.domain.dto.TrelloMappingDTO;
 import com.agilesync.domain.entity.TrelloMapping;
 import com.agilesync.domain.entity.TrelloSettings;
-import com.agilesync.domain.enumeration.ScrumTrelloEnum;
+import com.agilesync.domain.enumeration.ScrumStagesEnum;
 import com.agilesync.repository.TrelloMappingRepository;
 import com.agilesync.repository.TrelloSettingsRepository;
 import com.agilesync.utils.ObjectUtils;
@@ -33,7 +33,7 @@ public class TrelloMappingService {
 		TrelloSettings trelloSettings = trelloSettingsRepository.findById(trelloSettingId)
 				.orElseThrow(() -> new IllegalArgumentException("TrelloSettings não encontrado"));
 
-		List<ScrumTrelloEnum> referentsInDTO = dtos.stream()
+		List<ScrumStagesEnum> referentsInDTO = dtos.stream()
 				.map(TrelloMappingDTO::getReferent)
 				.collect(Collectors.toList());
 

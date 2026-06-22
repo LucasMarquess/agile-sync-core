@@ -226,7 +226,7 @@ BusinessMap. Os 6 padrões abaixo foram mapeados 1:1 para os detectores implemen
   prontoComItens       = existe registro de "Pronto" na sprint com quantityCards > 0
   return desenvolvimentoVazio && prontoComItens
   ```
-- **Antes**: o código verificava se o conjunto de estágios da sprint (`Set<ScrumTrelloEnum>`)
+- **Antes**: o código verificava se o conjunto de estágios da sprint (`Set<ScrumStagesEnum>`)
   continha ou não "Desenvolvimento"/"Pronto". Como `processMetricsCfd` sempre gera um
   registro de `CfdDataDTO` para **todo** estágio mapeado em **toda** sprint (mesmo com
   contagem zero), esse conjunto é constante — a condição nunca variava de fato entre

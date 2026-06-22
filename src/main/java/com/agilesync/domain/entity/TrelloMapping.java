@@ -1,6 +1,6 @@
 package com.agilesync.domain.entity;
 
-import com.agilesync.domain.enumeration.ScrumTrelloEnum;
+import com.agilesync.domain.enumeration.ScrumStagesEnum;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,7 +20,7 @@ public class TrelloMapping {
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "referent", nullable = false)
-	private ScrumTrelloEnum referent;
+	private ScrumStagesEnum referent;
 
 	@Column(name = "list_id", nullable = false)
 	private String listId;

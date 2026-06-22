@@ -2,14 +2,14 @@ package com.agilesync.domain.dto;
 
 import com.agilesync.domain.entity.TrelloMapping;
 import com.agilesync.domain.entity.TrelloSettings;
-import com.agilesync.domain.enumeration.ScrumTrelloEnum;
+import com.agilesync.domain.enumeration.ScrumStagesEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
 @AllArgsConstructor
 public class TrelloMappingDTO {
-	private ScrumTrelloEnum referent;
+	private ScrumStagesEnum referent;
 	private String listId;
 	private String listName;
 	private Long trelloSettingId;

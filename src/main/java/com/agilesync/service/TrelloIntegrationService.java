@@ -3,7 +3,7 @@ package com.agilesync.service;
 import com.agilesync.client.AgileToolClient;
 import com.agilesync.domain.dto.*;
 import com.agilesync.domain.entity.TrelloSettings;
-import com.agilesync.domain.enumeration.ScrumTrelloEnum;
+import com.agilesync.domain.enumeration.ScrumStagesEnum;
 import com.agilesync.exceptions.BadRequestException;
 import com.agilesync.repository.TrelloSettingsRepository;
 import com.agilesync.utils.ObjectUtils;
@@ -164,7 +164,7 @@ public class TrelloIntegrationService {
 
 		var cfdData = new ArrayList<CfdDataDTO>();
 
-		var cumulativeCountsByStage = new HashMap<ScrumTrelloEnum, HashMap<String, Integer>>();
+		var cumulativeCountsByStage = new HashMap<ScrumStagesEnum, HashMap<String, Integer>>();
 
 		for (var map : mappings) {
 			var listId = map.getListId();
@@ -251,7 +251,7 @@ public class TrelloIntegrationService {
 
 	private Map<String, Integer> calculateThroughputBySprint(List<CfdDataDTO> cfdDataList) {
 		return cfdDataList.stream()
-				.filter(data -> data.getStage() == ScrumTrelloEnum.PRONTO)
+				.filter(data -> data.getStage() == ScrumStagesEnum.PRONTO)
 				.collect(Collectors.groupingBy(
 						CfdDataDTO::getSprint,
 						Collectors.summingInt(CfdDataDTO::getQuantityCards)
@@ -260,7 +260,7 @@ public class TrelloIntegrationService {
 
 	private Map<String, Integer> calculateBacklogWipBySprint(List<CfdDataDTO> cfdDataList) {
 		return cfdDataList.stream()
-				.filter(data -> data.getStage() == ScrumTrelloEnum.BACKLOG)
+				.filter(data -> data.getStage() == ScrumStagesEnum.BACKLOG)
 				.collect(Collectors.groupingBy(
 						CfdDataDTO::getSprint,
 						Collectors.summingInt(CfdDataDTO::getQuantityCards)
@@ -269,7 +269,7 @@ public class TrelloIntegrationService {
 
 	private Map<String, List<WipDTO>> calculateWipBySprint(List<CfdDataDTO> cfdDataList) {
 		return cfdDataList.stream()
-				.filter(data -> data.getStage() != ScrumTrelloEnum.PRONTO && data.getStage() != ScrumTrelloEnum.BACKLOG)
+				.filter(data -> data.getStage() != ScrumStagesEnum.PRONTO && data.getStage() != ScrumStagesEnum.BACKLOG)
 				.collect(Collectors.groupingBy(
 						CfdDataDTO::getSprint,
 						Collectors.groupingBy(
