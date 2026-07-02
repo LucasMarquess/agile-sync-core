@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.21.3.final using JasperReports Library version 6.21.3-4a3078d20785ebe464f18037d738d12fc98c13cf  -->
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.21.5-74d586df47b25dbd05bd0957999819196e59934a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report-metrics" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="0" uuid="dc2760e2-3f60-439e-8248-b33b5197345b">
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
@@ -26,8 +26,6 @@
 		<field name="leadTime" class="java.math.BigDecimal"/>
 		<field name="cycleTime" class="java.math.BigDecimal"/>
 		<field name="sprintNumber" class="java.lang.Integer"/>
-		<field name="flowEfficiency" class="java.math.BigDecimal"/>
-		<field name="netFlow" class="java.lang.Integer"/>
 	</subDataset>
 	<subDataset name="WIPS" uuid="56af22d0-6399-4fd4-a160-fb42731691ac">
 		<queryString>
@@ -40,7 +38,7 @@
 	<parameter name="SRC_IMAGES_PATH" class="java.lang.String">
 		<defaultValueExpression><![CDATA["src/main/resources/reports/images"]]></defaultValueExpression>
 	</parameter>
-	<parameter name="VELOCITY" class="java.math.BigDecimal"/>
+	<parameter name="THROUGHPUT_AVERAGE" class="java.math.BigDecimal"/>
 	<parameter name="CFD_DATAS" class="java.util.List"/>
 	<parameter name="INITIAL_SPRINT" class="java.lang.String"/>
 	<parameter name="FINAL_SPRINT" class="java.lang.String"/>
@@ -202,11 +200,11 @@
 				<text><![CDATA[- Métricas]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="0" y="20" width="110" height="14" uuid="72d4f0ca-1934-44a6-84fb-932a7219cde2"/>
+				<reportElement x="0" y="20" width="190" height="14" uuid="72d4f0ca-1934-44a6-84fb-932a7219cde2"/>
 				<textElement>
 					<font fontName="DejaVu Sans"/>
 				</textElement>
-				<textFieldExpression><![CDATA["* Velocity: " + $P{VELOCITY}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["* Throughput médio: " + $P{THROUGHPUT_AVERAGE}]]></textFieldExpression>
 			</textField>
 			<frame>
 				<reportElement x="0" y="40" width="555" height="30" uuid="f4cc9cbb-4f44-47d1-89a2-33cf57ff0576">
@@ -264,40 +262,14 @@
 					</textElement>
 					<text><![CDATA[Throughput]]></text>
 				</staticText>
-				<staticText>
-					<reportElement x="380" y="0" width="90" height="30" uuid="6b1f0a3a-2f3a-4f6e-8c1a-9e6f0a8c1d2a"/>
-					<box>
-						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					</box>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="DejaVu Sans" isBold="true"/>
-					</textElement>
-					<text><![CDATA[Eficiência de Fluxo (%)]]></text>
-				</staticText>
-				<staticText>
-					<reportElement x="470" y="0" width="85" height="30" uuid="7c2f1b4b-3a4b-5f7f-9d2b-0f7d1b9d2e3b"/>
-					<box>
-						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-					</box>
-					<textElement textAlignment="Center" verticalAlignment="Middle">
-						<font fontName="DejaVu Sans" isBold="true"/>
-					</textElement>
-					<text><![CDATA[Net Flow]]></text>
-				</staticText>
 			</frame>
 			<componentElement>
-				<reportElement x="0" y="70" width="555" height="30" uuid="8bada910-7411-4543-a939-2a4ee72a081e"/>
+				<reportElement x="0" y="70" width="380" height="30" uuid="8bada910-7411-4543-a939-2a4ee72a081e"/>
 				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
 					<datasetRun subDataset="SPRINTS_METRICS" uuid="eedf3211-ebf1-4d28-a152-c1800612d3be">
 						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{SPRINTS_METRICS})]]></dataSourceExpression>
 					</datasetRun>
-					<jr:listContents height="30" width="555">
+					<jr:listContents height="30" width="380">
 						<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 							<reportElement x="0" y="0" width="80" height="30" uuid="e419949c-eda0-4fdd-8bc4-74e8dccd1192">
 								<property name="com.jaspersoft.studio.unit.width" value="px"/>
@@ -360,38 +332,6 @@
 								<font fontName="DejaVu Sans"/>
 							</textElement>
 							<textFieldExpression><![CDATA[$F{throughput}]]></textFieldExpression>
-						</textField>
-						<textField textAdjust="StretchHeight" pattern="#,##0.###;(#,##0.###-)" isBlankWhenNull="true">
-							<reportElement x="380" y="0" width="90" height="30" uuid="9d1e2f3a-4b5c-6d7e-8f9a-0b1c2d3e4f5a">
-								<property name="com.jaspersoft.studio.unit.width" value="px"/>
-							</reportElement>
-							<box>
-								<pen lineWidth="0.5"/>
-								<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-								<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-								<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-								<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-							</box>
-							<textElement textAlignment="Center" verticalAlignment="Middle">
-								<font fontName="DejaVu Sans"/>
-							</textElement>
-							<textFieldExpression><![CDATA[$F{flowEfficiency}]]></textFieldExpression>
-						</textField>
-						<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-							<reportElement x="470" y="0" width="85" height="30" uuid="a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d">
-								<property name="com.jaspersoft.studio.unit.width" value="px"/>
-							</reportElement>
-							<box>
-								<pen lineWidth="0.5"/>
-								<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-								<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-								<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-								<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
-							</box>
-							<textElement textAlignment="Center" verticalAlignment="Middle">
-								<font fontName="DejaVu Sans"/>
-							</textElement>
-							<textFieldExpression><![CDATA[$F{netFlow}]]></textFieldExpression>
 						</textField>
 					</jr:listContents>
 				</jr:list>

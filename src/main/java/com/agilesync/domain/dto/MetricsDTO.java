@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 @Builder
 public class MetricsDTO {
-	private BigDecimal velocity;
+	private BigDecimal throughputAverage;
 	private String analysis;
 	private List<SprintCfdDataDTO> sprintCfdData;
 }

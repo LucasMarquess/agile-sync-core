@@ -1,0 +1,1 @@
+ALTER TABLE trello_settings ADD COLUMN IF NOT EXISTS sprint_duration_days INTEGER NOT NULL DEFAULT 15;

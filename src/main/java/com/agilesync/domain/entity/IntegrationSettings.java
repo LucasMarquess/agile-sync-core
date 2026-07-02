@@ -30,6 +30,9 @@ public abstract class IntegrationSettings {
 	@Column(name = "active", nullable = false)
 	private Boolean active = true;
 
+	@Column(name = "sprint_duration_days", nullable = false)
+	private Integer sprintDurationDays;
+
 	@ManyToOne(optional = false)
 	@JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
 	private User user;

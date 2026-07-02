@@ -43,7 +43,7 @@ public class ReportsService {
 		HashMap hashMap = new HashMap();
 		hashMap.put("INITIAL_SPRINT", initialPeriod);
 		hashMap.put("FINAL_SPRINT", finalPeriod);
-		hashMap.put("VELOCITY", metric.getVelocity());
+		hashMap.put("THROUGHPUT_AVERAGE", metric.getThroughputAverage());
 		hashMap.put("ANALYSIS", metric.getAnalysis());
 		hashMap.put("CFD_DATAS", cfdDatas);
 		hashMap.put("SPRINTS_METRICS", metric.getSprintCfdData());

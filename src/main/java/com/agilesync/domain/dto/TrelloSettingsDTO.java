@@ -12,4 +12,5 @@ public class TrelloSettingsDTO {
 	private String token;
 	private String boardId;
 	private String name;
+	private Integer sprintDurationDays;
 }
